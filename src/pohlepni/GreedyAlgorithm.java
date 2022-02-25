@@ -1,7 +1,6 @@
 package pohlepni;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -14,17 +13,16 @@ public class GreedyAlgorithm {
 	public static WeightedGraph greedy(WeightedGraph G) {
 		WeightedGraph D = new WeightedGraph();
 		D.addVertex(firstNode(G));
-		// while(nodeWithoutNeighborsInD(G, D)) {
-		
-		// }
+		while (nodeWithoutNeighborsInD(G, D)) {
+			addNode(G, D);
+		}
 		return D;
 	}
 
 	private static Vertex firstNode(WeightedGraph G) {
 		Map<Vertex, Double> map = new HashMap<>();
-		Iterator<Vertex> it = G.getVertices().iterator();
-		while (it.hasNext()) {
-			Vertex temp = it.next();
+		for (Vertex v : G.getVertices()) {
+			Vertex temp = v;
 			map.put(temp, ((double) temp.getWeight()) / ((double) temp.getEdges().size()));
 		}
 		Vertex bestPick = null;
@@ -49,15 +47,37 @@ public class GreedyAlgorithm {
 
 	private static Set<Vertex> nodesAndNeighbors(WeightedGraph G, WeightedGraph D) { // nodes from D and neighbor
 		Set<Vertex> rtrn = D.allVertices(); // of nodes in D
-		Iterator<Vertex> it = D.getVertices().iterator();
-		while (it.hasNext()) {
-			Vertex temp = G.getVertex(it.next().getLabel());
+		for (Vertex vrt : D.getVertices()) {
+			Vertex temp = G.getVertex(vrt.getLabel());
 			for (Vertex v : temp.getNeighbors())
-				rtrn.add(v);
+				if (D.getVertex(v.getLabel()) == null)
+					rtrn.add(v);
 		}
 		return rtrn;
 	}
 
+	public static void addNode(WeightedGraph G, WeightedGraph D) {
+		Vertex from = null;
+		Edge edge = null;
+		double smallest = Double.MAX_VALUE;
+		for (Vertex v : D.allVertices()) {
+			for (Edge e : G.getVertex(v.getLabel()).getEdges()) {
+				if (D.getVertex(e.getTo().getLabel()) == null) {
+					double value = ((double) e.getTo().getWeight()) / e.getTo().getEdges().size() + e.getWeight();
+					if (smallest > value) {
+						smallest = value;
+						from = v;
+						edge = e;
+					}
+				}
+
+			}
+		}
+		Vertex to = new Vertex(edge.getTo().getLabel(), edge.getWeight());
+		from.addEdge(new Edge(to, edge.getWeight()));
+		to.addEdge(new Edge(from, edge.getWeight()));
+		D.addVertex(to);
+	}
 
 	public static void main(String[] args) {
 		WeightedGraph graph = new WeightedGraph();

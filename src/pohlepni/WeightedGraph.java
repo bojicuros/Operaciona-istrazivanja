@@ -6,7 +6,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -55,11 +54,9 @@ public class WeightedGraph {
 	}
 
 	Vertex getVertex(String label) {
-		Iterator<Vertex> it = vertices.iterator();
-		while (it.hasNext()) {
-			Vertex temp = it.next();
-			if (temp.label.equals(label))
-				return temp;
+		for (Vertex v : vertices) {
+			if (v.label.equals(label))
+				return v;
 		}
 		return null;
 	}
@@ -98,20 +95,23 @@ public class WeightedGraph {
 
 		public Set<Vertex> getNeighbors() {
 			Set<Vertex> rtrn = new HashSet<>();
-			Iterator<Edge> it = this.edges.iterator();
-			while (it.hasNext()) {
-				rtrn.add(it.next().to);
+			for (Edge e : this.edges) {
+				rtrn.add(e.to);
 			}
 			return rtrn;
+
 		}
-		
+
+		@Override
+		public boolean equals(Object b) {
+			Vertex v = (Vertex) b;
+			return this.label.equals(v.label);
+		}
 
 		public String toString() {
 			String rez = "Node " + label + " with weight " + weight + " has neighbours: ";
-			Iterator<Edge> it = edges.iterator();
-			while (it.hasNext()) {
-				Edge current = it.next();
-				rez += "\n  " + current.getTo().label + " connected with edge of weight " + current.getWeight();
+			for (Edge e : edges) {
+				rez += "\n  " + e.getTo().label + " connected with edge of weight " + e.getWeight();
 			}
 			rez += "\n";
 			return rez;
@@ -140,17 +140,15 @@ public class WeightedGraph {
 
 	public Set<Vertex> allVertices() {
 		Set<Vertex> rtrn = new HashSet<>();
-		Iterator<Vertex> it = vertices.iterator();
-		while (it.hasNext())
-			rtrn.add(it.next());
+		for (Vertex v : vertices)
+			rtrn.add(v);
 		return rtrn;
 	}
 
 	public String toString() {
 		String rez = "";
-		Iterator<Vertex> it = vertices.iterator();
-		while (it.hasNext()) {
-			rez += it.next().toString();
+		for (Vertex v : vertices) {
+			rez += v.toString();
 		}
 		return rez;
 	}
