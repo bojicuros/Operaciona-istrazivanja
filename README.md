@@ -17,7 +17,7 @@ izvršavanja (na 10 puštanja). CPLEX puštate jednom po instanci gdje bilježit
 -- možete recimo imati 3 tabele, jednu za rezultate na malim instancama, jednu tabelu za rezultate na srednjim instancama i jednu za rezultate za velike instance. najbolji
 rezultat za svaku instancu među ova tri algoritma boldovati radi preglednosti.
 4. Prodiskutovati rezultate: na koliko instanci jedan algoritam daje bolja rješenja, na koliko 
-drugi, itd. Brzinu izvršaanja algoritma, koliko je instanci XPLEX riješio do optimalnosti itd. 
+drugi, itd. Brzinu izvršanja algoritma, koliko je instanci XPLEX riješio do optimalnosti itd. 
 5. Vrijeme za svaki od algoritama ograničiti na (maksimalno) 10 minuta.
 6. Po slobodnom izboru birajte programski jezik u kom ćete da implementirate algoritme. Jedini uslov je da sva tri algoritma moraju da budu implementirani u istom programskom 
 jeziku. 
