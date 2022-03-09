@@ -8,7 +8,7 @@ public class GeneticAlgorithm {
    private Set<Integer> oznaceni = new LinkedHashSet<Integer>();
    Random rand = new Random();
    
-   public void generisiNizOznacenih() {
+   public void generisiOznacene() {
 	   int brOznacenih = rand.nextInt(20);
 	   System.out.println("Broj oznacenih: "+brOznacenih);
 	   while(oznaceni.size() < brOznacenih) {
@@ -19,6 +19,6 @@ public class GeneticAlgorithm {
    }
    public static void main(String[] args) {
 	   GeneticAlgorithm ga = new GeneticAlgorithm();
-	   ga.generisiNizOznacenih();
+	   ga.generisiOznacene();
    }
 }
