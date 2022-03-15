@@ -14,15 +14,14 @@ public class GeneticAlgorithm {
 	public class Population {
 		int size = 2;
 		Individual[] individuals = new Individual[2];
-		Individual[] children = new Individual[2]; //niz za djecu;
-		
+		Individual[] children = new Individual[2]; // niz za djecu;
 
 		public Population() {
 			individuals[0] = new Individual();
 			individuals[0].initialize();
 			individuals[1] = new Individual();
 			individuals[1].initializeSecondI(individuals[0]); // --> inicijalizujemo dvije pocetne jedinke
-			for(int i = 0; i<2; i++) 
+			for (int i = 0; i < 2; i++)
 				children[i] = new Individual();
 		}
 
@@ -35,7 +34,7 @@ public class GeneticAlgorithm {
 				}
 				System.out.println();
 			}
-			
+
 			for (int i = 0; i < 2; i++) {
 				System.out.println(i + ". dijete: ");
 				for (int j = 0; j < children[i].genes.length; j++) {
@@ -76,32 +75,49 @@ public class GeneticAlgorithm {
 	}
 
 	public void selection() {
-       
+
 	}
 
 	public void crossover() {
 		int n = rand.nextInt(vertex_num);
 		System.out.println(n);
-		//first child
-        for(int i = 0; i<n; i++) {
-			population.children[0].genes[i] = population.individuals[0].genes[i]; 
-        }
-        for (int i = n; i<vertex_num; i++) {
-        	population.children[0].genes[i] = population.individuals[1].genes[i]; 
-        }
-        
-        //second child
-        for(int i = 0; i<n; i++) {
-			population.children[1].genes[i] = population.individuals[1].genes[i]; 
-        }
-        for (int i = n; i<vertex_num; i++) {
-        	population.children[1].genes[i] = population.individuals[0].genes[i]; 
-        }
-   
-        System.out.println("N: "+n);
-        population.writeIndividualsGenes(); // --> ispis roditelja i djece poslije ukrstanja ( samo za testiranje)
-        
-        
+		// first child
+		for (int i = 0; i < n; i++) {
+			population.children[0].genes[i] = population.individuals[0].genes[i];
+		}
+		for (int i = n; i < vertex_num; i++) {
+			population.children[0].genes[i] = population.individuals[1].genes[i];
+		}
+
+		// second child
+		for (int i = 0; i < n; i++) {
+			population.children[1].genes[i] = population.individuals[1].genes[i];
+		}
+		for (int i = n; i < vertex_num; i++) {
+			population.children[1].genes[i] = population.individuals[0].genes[i];
+		}
+
+		System.out.println("N: " + n);
+		population.writeIndividualsGenes();
+
+	}
+	
+	public void mutation() {
+		double pm = (double)(Math.random()*((double)1)/2) + ((double)1/vertex_num); //vjerovatnoca ga ce gen mutirati
+		System.out.println(pm);
+		for(Individual c:population.children) {
+			for(int i = 0; i < c.genes.length; i++) {
+				int pg = rand.nextInt(100);
+				System.out.println("PG: "+pg);
+				System.out.println("PM: "+ (int)(pm*100));
+				if(pg >= 0 && pg <= (int)(pm*100)) { //--> izvrsava se mutiranje gena sa vjerovatnocom pm
+					if(c.genes[i] == 0)
+						c.genes[i] = 1;
+					else
+						c.genes[i] = 0;
+				}
+			}
+		}
 	}
 
 	public static void main(String[] args) {
@@ -113,8 +129,8 @@ public class GeneticAlgorithm {
 			// ga.selection();
 			count = 10;
 			ga.crossover();
-
-			// ga.mutation();
+            ga.mutation();
+            ga.population.writeIndividualsGenes();
 		}
 	}
 }
