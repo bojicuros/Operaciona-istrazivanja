@@ -1,136 +1,175 @@
 package genetski;
 
-import java.util.LinkedHashSet;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Random;
-import java.util.Set;
 
 public class GeneticAlgorithm {
 	public Random rand = new Random();
 	private Population population = new Population();
-	double fitness, secondFitness;
-	public static int count = 0;
+	public static int count = 9;
 	public static int vertex_num = 5;
 
 	public class Population {
-		int size = 2;
-		Individual[] individuals = new Individual[2];
-		Individual[] children = new Individual[2]; // niz za djecu;
+		int size = 20; // novi broj
+		ArrayList<Individual> parents = new ArrayList<Individual>();
+		ArrayList<Individual> children = new ArrayList<Individual>();
 
 		public Population() {
-			individuals[0] = new Individual();
-			individuals[0].initialize();
-			individuals[1] = new Individual();
-			individuals[1].initializeSecondI(individuals[0]); // --> inicijalizujemo dvije pocetne jedinke
-			for (int i = 0; i < 2; i++)
-				children[i] = new Individual();
+			int br = 0;
+			while (br < 20) {
+				parents.add(new Individual());
+				br++;
+			}
 		}
 
 		// Funckija za ispis gena (pocetni nizovi 0-1 )
 		public void writeIndividualsGenes() {
-			for (int i = 0; i < 2; i++) {
-				System.out.println(i + ". roditelj: ");
-				for (int j = 0; j < individuals[i].genes.length; j++) {
-					System.out.print(individuals[i].genes[j] + " ");
-				}
+			for (Individual in : parents) {
+				System.out.println(in);
 				System.out.println();
 			}
-
-			for (int i = 0; i < 2; i++) {
-				System.out.println(i + ". dijete: ");
-				for (int j = 0; j < children[i].genes.length; j++) {
-					System.out.print(children[i].genes[j] + " ");
+			if (children.size() != 0) {
+				System.out.println("DJECAAAA: ");
+				for (Individual in : children) {
+					System.out.println(in);
+					System.out.println();
 				}
-				System.out.println();
 			}
 		}
-
 	}
 
 	// klasa za jedinke
 	public class Individual {
-		public int fitness;
-		public int[] genes = new int[vertex_num];
+		public double fitness;
+		public int[] genes;
+
+		public Individual() {
+			this.fitness = Double.MAX_VALUE;
+			genes = new int[vertex_num];
+			this.initialize();
+		}
 
 		public void initialize() {
 			for (int i = 0; i < genes.length; i++)
 				genes[i] = Math.abs(rand.nextInt() % 2);
 		}
 
-		public void initializeSecondI(Individual first) {
-			for (int i = 0; i < first.getGenes().length; i++) {
-				if (first.getGenes()[i] == 1)
-					this.genes[i] = 0;
-				else
-					this.genes[i] = 1;
-			}
-		}
-
 		public void calculateF() {
-			// izracunavanje fitnes funkcije
+			boolean b = rand.nextBoolean();
+			if (b) {
+				this.fitness = (double) (Math.random() * 100);
+			}
 		}
 
 		public int[] getGenes() {
 			return genes;
 		}
+
+		public String toString() {
+			String rez = " ";
+			for (int i = 0; i < genes.length; i++)
+				rez += genes[i] + " ";
+			rez += " fitnes: " + fitness;
+			return rez;
+		}
+
+	}
+
+	public void evaluate() {
+		for (Individual in : population.children) {
+			in.calculateF();
+		}
+		for (Individual in : population.parents) {
+			in.calculateF();
+		}
 	}
 
 	public void selection() {
+		Collections.sort(population.children, new Comparator<Individual>() {
+			@Override
+			public int compare(Individual a, Individual b) {
+				return (int) (a.fitness - b.fitness);
+			}
+		});
+
+		if (population.children.size() == 0) {
+			Collections.sort(population.parents, new Comparator<Individual>() {
+				@Override
+				public int compare(Individual a, Individual b) {
+					return (int) (a.fitness - b.fitness);
+				}
+			});
+
+			int i = 0;
+			while (i < 5) {
+				population.children.add(population.parents.get(0));
+				population.parents.remove(0);
+				i++;
+			}
+		} else {
+			population.parents.clear();
+			int i = 5;
+			while (population.children.size() > 5) {
+				if (i < 20) {
+					population.parents.add(population.children.get(5));
+					i++;
+				}
+				population.children.remove(5);
+			}
+		}
 
 	}
+
+//	public void crossover() { int n = rand.nextInt(vertex_num); // first child
+//	  for (int i = 0; i < n; i++) { population.children[0].genes[i] =
+//	  population.individuals[0].genes[i]; } for (int i = n; i < vertex_num; i++) {
+//	  population.children[0].genes[i] = population.individuals[1].genes[i]; }
+//	  
+//	  for (int i = 0; i < n; i++) { 
+//		  population.children[1].genes[i]= population.individuals[1].genes[i]; } 
+//	  for (int i = n; i < vertex_num; i++)
+//	  { population.children[1].genes[i] = population.individuals[0].genes[i]; }
+//	  
+//	  System.out.println("N: " + n); population.writeIndividualsGenes();
+//	  
+//	  }
 
 	public void crossover() {
-		int n = rand.nextInt(vertex_num);
-		System.out.println(n);
-		// first child
-		for (int i = 0; i < n; i++) {
-			population.children[0].genes[i] = population.individuals[0].genes[i];
-		}
-		for (int i = n; i < vertex_num; i++) {
-			population.children[0].genes[i] = population.individuals[1].genes[i];
-		}
-
-		// second child
-		for (int i = 0; i < n; i++) {
-			population.children[1].genes[i] = population.individuals[1].genes[i];
-		}
-		for (int i = n; i < vertex_num; i++) {
-			population.children[1].genes[i] = population.individuals[0].genes[i];
-		}
-
-		System.out.println("N: " + n);
-		population.writeIndividualsGenes();
-
+      //pomocna lista za potomke slati u mutaciju
 	}
-	
+
 	public void mutation() {
-		double pm = (double)(Math.random()*((double)1)/2) + ((double)1/vertex_num); //vjerovatnoca ga ce gen mutirati
-		System.out.println(pm);
-		for(Individual c:population.children) {
-			for(int i = 0; i < c.genes.length; i++) {
+		double pm = (double) (Math.random() * ((double) 1) / 2) + ((double) 1 / vertex_num); // vjerovatnoca ga ce gen
+																								// mutirati
+		for (Individual c : population.children) {
+			for (int i = 0; i < c.genes.length; i++) {
 				int pg = rand.nextInt(100);
-				System.out.println("PG: "+pg);
-				System.out.println("PM: "+ (int)(pm*100));
-				if(pg >= 0 && pg <= (int)(pm*100)) { //--> izvrsava se mutiranje gena sa vjerovatnocom pm
-					if(c.genes[i] == 0)
+				if (pg >= 0 && pg <= (int) (pm * 100)) { // --> izvrsava se mutiranje gena sa vjerovatnocom pm
+					if (c.genes[i] == 0)
 						c.genes[i] = 1;
 					else
 						c.genes[i] = 0;
 				}
 			}
 		}
+		//pomocnu listu kopirati u djecu
 	}
 
 	public static void main(String[] args) {
 		GeneticAlgorithm ga = new GeneticAlgorithm();
-		// ga.population.writeIndividualsGenes();
-
-		// ga.population.setFitness()
+		ga.evaluate();
 		while (count < 10) {
-			// ga.selection();
-			count = 10;
-			ga.crossover();
-            ga.mutation();
-            ga.population.writeIndividualsGenes();
+			ga.population.writeIndividualsGenes();
+			System.out.println("----------------------------------");
+			ga.selection();
+			count++;
+			// ga.crossover();
+			// ga.mutation();
+
+			ga.population.writeIndividualsGenes();
 		}
 	}
 }
