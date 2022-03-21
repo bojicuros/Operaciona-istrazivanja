@@ -1,6 +1,7 @@
 package pohlepni;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -10,10 +11,10 @@ import pohlepni.WeightedGraph.Vertex;
 
 public class GreedyAlgorithm {
 
-	public static WeightedGraph greedy(WeightedGraph G) {
+	public static WeightedGraph findMinTotalDomSubgraph(WeightedGraph G) {
 		WeightedGraph D = new WeightedGraph();
 		D.addVertex(firstNode(G));
-		while (nodeWithoutNeighborsInD(G, D)) {
+		while (!isWTD(G, D)) {
 			addNode(G, D);
 		}
 		return D;
@@ -41,8 +42,8 @@ public class GreedyAlgorithm {
 		return new Vertex(bestPick.getLabel(), bestPick.getWeight());
 	}
 
-	private static Boolean nodeWithoutNeighborsInD(WeightedGraph G, WeightedGraph D) { // does node without
-		return G.allVertices().size() != nodesAndNeighbors(G, D).size(); // neighbors in D exists
+	private static Boolean isWTD(WeightedGraph G, WeightedGraph D) { // does node without
+		return G.allVertices().size() == nodesAndNeighbors(G, D).size(); // neighbors in D exists
 	}
 
 	private static Set<Vertex> nodesAndNeighbors(WeightedGraph G, WeightedGraph D) { // nodes from D and neighbor
@@ -70,44 +71,89 @@ public class GreedyAlgorithm {
 						edge = e;
 					}
 				}
-
 			}
 		}
-		Vertex to = new Vertex(edge.getTo().getLabel(), edge.getWeight());
-		from.addEdge(new Edge(to, edge.getWeight()));
-		to.addEdge(new Edge(from, edge.getWeight()));
+		Vertex to = new Vertex(edge.getTo().getLabel(), edge.getTo().getWeight());
+		from.addEdge(new Edge(to, edge.getWeight(), D.getNumOfEdges() + ""));
+		to.addEdge(new Edge(from, edge.getWeight(), D.getNumOfEdges() + ""));
+		D.setNumOfEdges(D.getNumOfEdges() + 1);
 		D.addVertex(to);
 	}
 
+	public static int evaluate(WeightedGraph G, WeightedGraph D) {
+		int sum = 0;
+		int sum2 = 0;
+		for (Vertex v : D.getVertices()) {
+			sum += v.getWeight();
+			for (Edge e : v.getEdges())
+				sum2 += e.getWeight();
+		}
+		sum += sum2 / 2;
+		for (Vertex v : nodesThatArentInD(G, D)) {
+			double min = Double.MAX_VALUE;
+			for (Edge e : v.getEdges()) {
+				if (D.getVertices().contains(e.getTo())) {
+					if (e.getWeight() < min)
+						min = e.getWeight();
+				}
+			}
+			sum += min;
+		}
+		return sum;
+	}
+
+	private static Set<Vertex> nodesThatArentInD(WeightedGraph G, WeightedGraph D) { // nodes from G that arent
+		Set<Vertex> rtrn = new HashSet<>(); // of nodes in D
+		for (Vertex v : G.getVertices())
+			if (D.getVertex(v.getLabel()) == null)
+				rtrn.add(v);
+		return rtrn;
+	}
+	
 	public static void main(String[] args) {
-		WeightedGraph graph = new WeightedGraph();
+		WeightedGraph g = new WeightedGraph();
 
 		// construct vertices
-		Vertex v1 = new Vertex("1", 2);
-		Vertex v2 = new Vertex("2", 3);
-		Vertex v3 = new Vertex("3", 7);
-		Vertex v4 = new Vertex("4", 6);
-		Vertex v5 = new Vertex("5", 1);
+		Vertex v0 = new Vertex("0", 2);
+		Vertex v1 = new Vertex("1", 3);
+		Vertex v2 = new Vertex("2", 7);
+		Vertex v3 = new Vertex("3", 6);
+		Vertex v4 = new Vertex("4", 1);
+		Vertex v5 = new Vertex("5", 4);
 
-		v1.addEdge(new Edge(v2, 1)); // connect v1 v2
-		v2.addEdge(new Edge(v1, 1));
+		v0.addEdge(new Edge(v1, 1, "0")); // connect v1 v2
+		v1.addEdge(new Edge(v0, 1, "0"));
 
-		v2.addEdge(new Edge(v3, 2)); // connect v2 v3
-		v3.addEdge(new Edge(v2, 2));
+		v1.addEdge(new Edge(v2, 2, "1")); // connect v2 v3
+		v2.addEdge(new Edge(v1, 2, "1"));
 
-		v2.addEdge(new Edge(v4, 3)); // connect v2 v4
-		v4.addEdge(new Edge(v2, 3));
+		v1.addEdge(new Edge(v3, 3, "2")); // connect v2 v4
+		v3.addEdge(new Edge(v1, 3, "2"));
 
-		v4.addEdge(new Edge(v5, 1)); // connect v4 v5
-		v5.addEdge(new Edge(v4, 1));
+		v3.addEdge(new Edge(v4, 1, "3")); // connect v4 v5
+		v4.addEdge(new Edge(v3, 1, "3"));
 
-		graph.addVertex(v1);
-		graph.addVertex(v2);
-		graph.addVertex(v3);
-		graph.addVertex(v4);
-		graph.addVertex(v5);
+		v5.addEdge(new Edge(v0, 1, "4")); // connect v4 v5
+		v0.addEdge(new Edge(v5, 1, "4"));
 
-		System.out.println(greedy(graph));
+		v5.addEdge(new Edge(v4, 4, "5")); // connect v4 v5
+		v4.addEdge(new Edge(v5, 4, "5"));
+
+		v0.addEdge(new Edge(v4, 8, "6")); // connect v4 v5
+		v4.addEdge(new Edge(v0, 8, "6"));
+
+		g.addVertex(v0);
+		g.addVertex(v1);
+		g.addVertex(v2);
+		g.addVertex(v3);
+		g.addVertex(v4);
+		g.addVertex(v5);
+
+//		int[] niz = { 1, 0, 1, 1, 0, 0 };
+
+		WeightedGraph d = findMinTotalDomSubgraph(g);
+		System.out.println(d);
+		System.out.println("Evaluate: " + evaluate(g, d));
 
 	}
 
