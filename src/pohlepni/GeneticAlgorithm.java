@@ -16,7 +16,7 @@ public class GeneticAlgorithm {
 	public static int count = 9;
 	public static int vertex_num = 5;
 	public int n;
-	private WeightedGraph G;
+	private static WeightedGraph G;
 
 	public class Population {
 		int size = 20; // novi broj
@@ -87,7 +87,7 @@ public class GeneticAlgorithm {
 		}
 
 		private Boolean isWTP(WeightedGraph G, WeightedGraph D) { // does node without
-			return G.allVertices().size() != nodesAndNeighbors(G, D).size(); // neighbors in D exists
+			return G.allVertices().size() == nodesAndNeighbors(G, D).size(); // neighbors in D exists
 		}
 
 		private Set<Vertex> nodesAndNeighbors(WeightedGraph G, WeightedGraph D) { // nodes from D and neighbor
@@ -239,22 +239,58 @@ public class GeneticAlgorithm {
 			}
 		}
 		population.children.addAll(population.children2);
-
 	}
 
 	public static void main(String[] args) {
+		G = new WeightedGraph();
+
+		// construct vertices
+		Vertex v0 = new Vertex("0", 2);
+		Vertex v1 = new Vertex("1", 3);
+		Vertex v2 = new Vertex("2", 7);
+		Vertex v3 = new Vertex("3", 6);
+		Vertex v4 = new Vertex("4", 1);
+		Vertex v5 = new Vertex("5", 4);
+
+		v0.addEdge(new Edge(v1, 1, "0")); // connect v1 v2
+		v1.addEdge(new Edge(v0, 1, "0"));
+
+		v1.addEdge(new Edge(v2, 2, "1")); // connect v2 v3
+		v2.addEdge(new Edge(v1, 2, "1"));
+
+		v1.addEdge(new Edge(v3, 3, "2")); // connect v2 v4
+		v3.addEdge(new Edge(v1, 3, "2"));
+
+		v3.addEdge(new Edge(v4, 1, "3")); // connect v4 v5
+		v4.addEdge(new Edge(v3, 1, "3"));
+
+		v5.addEdge(new Edge(v0, 1, "4")); // connect v4 v5
+		v0.addEdge(new Edge(v5, 1, "4"));
+
+		v5.addEdge(new Edge(v4, 4, "5")); // connect v4 v5
+		v4.addEdge(new Edge(v5, 4, "5"));
+
+		v0.addEdge(new Edge(v4, 8, "6")); // connect v4 v5
+		v4.addEdge(new Edge(v0, 8, "6"));
+
+		G.addVertex(v0);
+		G.addVertex(v1);
+		G.addVertex(v2);
+		G.addVertex(v3);
+		G.addVertex(v4);
+		G.addVertex(v5);
 		GeneticAlgorithm ga = new GeneticAlgorithm();
 		ga.evaluate();
-		while (count < 10) {
-			/*
-			 * ga.population.writeIndividualsGenes();
-			 * System.out.println("----------------------------------");
-			 */
+		//while (count < 10) {
+			
+			  ga.population.writeIndividualsGenes();
+			 System.out.println("----------------------------------");
+			 
 			ga.selection();
 			count++;
 			ga.crossover();
 			ga.mutation();
-			// ga.population.writeIndividualsGenes();
-		}
+			 ga.population.writeIndividualsGenes();
+		//}
 	}
 }
