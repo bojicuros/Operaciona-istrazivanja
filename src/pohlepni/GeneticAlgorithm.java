@@ -3,9 +3,9 @@ package pohlepni;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
-import java.util.Set;
 
 import pohlepni.WeightedGraph.Edge;
 import pohlepni.WeightedGraph.Vertex;
@@ -13,9 +13,7 @@ import pohlepni.WeightedGraph.Vertex;
 public class GeneticAlgorithm {
 	public Random rand = new Random();
 	private Population population = new Population();
-	public static int count = 9;
-	public static int vertex_num = 5;
-	public int n;
+	public static int vertex_num;
 	private static WeightedGraph G;
 
 	public class Population {
@@ -47,6 +45,10 @@ public class GeneticAlgorithm {
 				}
 			}
 		}
+
+		public Individual getFirstChild() {
+			return children.get(0);
+		}
 	}
 
 	// klasa za jedinke
@@ -67,8 +69,120 @@ public class GeneticAlgorithm {
 
 		public void calculateF() {
 			WeightedGraph D = graphFromArray(G, genes);
-			if (isWTP(G, D))
-				this.fitness = evaluate(G, D);
+			if (isWTD(G, D)) {
+				WeightedGraph g = GreedyAlgorithm.findMinTotalDomSubgraph(D);
+				WeightedGraph d2 = makeMST(D, g);
+				this.fitness = GreedyAlgorithm.evaluate(G, d2);
+			}
+		}
+
+		public Boolean isWTD(WeightedGraph G, WeightedGraph D) {
+			if (!isConnected(D))
+				return false;
+			return GreedyAlgorithm.isWTD(G, D);
+		}
+
+		public boolean isConnected(WeightedGraph graph) {
+
+			Map<String, Boolean> visited = new HashMap<>();
+
+			for (Vertex v : graph.getVertices())
+				visited.put(v.getLabel(), false);
+
+			if (graph.getVertices().size() == 0)
+				return false;
+			DFS(graph.getVertices().get(0).getLabel(), graph, visited);
+
+			for (Map.Entry<String, Boolean> entry : visited.entrySet())
+				if (!entry.getValue())
+					return false;
+			return true;
+		}
+
+		public void DFS(String source, WeightedGraph graph, Map<String, Boolean> visited) {
+
+			visited.put(source, true);
+
+			for (Vertex v : graph.getVertex(source).getNeighbors()) {
+				if (visited.get(v.getLabel()) == false)
+					DFS(v.getLabel(), graph, visited);
+			}
+		}
+
+		private WeightedGraph makeMST(WeightedGraph G, WeightedGraph D) {
+			for (Vertex v : G.getVertices()) {
+				if (!D.getVertices().contains(v)) {
+					double min = Double.MAX_VALUE;
+					Edge minimum = null;
+					for (Edge e : v.getEdges()) {
+						if (D.getVertices().contains(e.getTo())) {
+							if (e.getWeight() < min) {
+								min = e.getWeight();
+								minimum = e;
+							}
+						}
+					}
+
+					for (Vertex vert : G.getVertices())
+						for (Edge e : vert.getEdges())
+							if (e.getTo().getLabel().equals(v.getLabel()))
+								if (e.getWeight() < min) {
+									min = e.getWeight();
+									minimum = e;
+								}
+					Vertex from = minimum.getFrom();
+					Vertex to = minimum.getTo();
+					if (!contains(D, from))
+						D.addVertex(new Vertex(from.getLabel(), from.getWeight()));
+					from = D.getVertex(from.getLabel());
+					if (!contains(D, to))
+						D.addVertex(new Vertex(to.getLabel(), to.getWeight()));
+					to = D.getVertex(to.getLabel());
+
+					from.addEdge(new Edge(to, minimum.getWeight(), minimum.getLabel()));
+					to.addEdge(new Edge(from, minimum.getWeight(), minimum.getLabel()));
+				}
+			}
+
+			if (!isConnected(D)) {
+				for (Vertex v : G.getVertices()) {
+					double min = Double.MAX_VALUE;
+					Edge minimum = null;
+					for (Edge e : v.getEdges()) {
+						if (D.getVertices().contains(e.getFrom()) && D.getVertices().contains(e.getTo())
+								&& !contains(D, e)) {
+							if (e.getWeight() < min) {
+								min = e.getWeight();
+								minimum = e;
+							}
+						}
+					}
+					if (minimum != null) {
+						Vertex from = D.getVertex(minimum.getFrom().getLabel());
+						Vertex to = D.getVertex(minimum.getTo().getLabel());
+						from.addEdge(new Edge(to, minimum.getWeight(), minimum.getLabel()));
+						to.addEdge(new Edge(from, minimum.getWeight(), minimum.getLabel()));
+						if (isConnected(D))
+							return D;
+					}
+				}
+			}
+			return D;
+		}
+
+		private boolean contains(WeightedGraph G, Vertex n) {
+			for (Vertex v : G.getVertices())
+				if (v.equals(n))
+					return true;
+			return false;
+		}
+
+		private boolean contains(WeightedGraph G, Edge edge) {
+			for (Vertex v : G.getVertices())
+				for (Edge e : v.getEdges())
+					if (e.equals(edge))
+						return true;
+			return false;
 		}
 
 		private WeightedGraph graphFromArray(WeightedGraph G, int[] gen) {
@@ -84,51 +198,6 @@ public class GeneticAlgorithm {
 				}
 			}
 			return D;
-		}
-
-		private Boolean isWTP(WeightedGraph G, WeightedGraph D) { // does node without
-			return G.allVertices().size() == nodesAndNeighbors(G, D).size(); // neighbors in D exists
-		}
-
-		private Set<Vertex> nodesAndNeighbors(WeightedGraph G, WeightedGraph D) { // nodes from D and neighbor
-			Set<Vertex> rtrn = D.allVertices(); // of nodes in D
-			for (Vertex vrt : D.getVertices()) {
-				Vertex temp = G.getVertex(vrt.getLabel());
-				for (Vertex v : temp.getNeighbors())
-					if (D.getVertex(v.getLabel()) == null)
-						rtrn.add(v);
-			}
-			return rtrn;
-		}
-
-		public int evaluate(WeightedGraph G, WeightedGraph D) {
-			int sum = 0;
-			int sum2 = 0;
-			for (Vertex v : D.getVertices()) {
-				sum += v.getWeight();
-				for (Edge e : v.getEdges())
-					sum2 += e.getWeight();
-			}
-			sum += sum2 / 2;
-			for (Vertex v : nodesThatArentInD(G, D)) {
-				double min = Double.MAX_VALUE;
-				for (Edge e : v.getEdges()) {
-					if (D.getVertices().contains(e.getTo())) {
-						if (e.getWeight() < min)
-							min = e.getWeight();
-					}
-				}
-				sum += min;
-			}
-			return sum;
-		}
-
-		private Set<Vertex> nodesThatArentInD(WeightedGraph G, WeightedGraph D) { // nodes from G that arent
-			Set<Vertex> rtrn = new HashSet<>(); // of nodes in D
-			for (Vertex v : G.getVertices())
-				if (D.getVertex(v.getLabel()) == null)
-					rtrn.add(v);
-			return rtrn;
 		}
 
 		public int[] getGenes() {
@@ -192,21 +261,21 @@ public class GeneticAlgorithm {
 
 	public void crossover() {
 		population.children2.clear();
-		n = rand.nextInt(vertex_num);
-		System.out.println("N: " + n);
+		int n = rand.nextInt(vertex_num);
+//		System.out.println("N: " + n);
 		Collections.shuffle(population.parents);
 		for (int i = 0; i < population.parents.size() - 1; i++) {
-			crossover2(population.parents.get(i), population.parents.get(i + 1));
+			crossoverParents(population.parents.get(i), population.parents.get(i + 1), n);
 		}
-		System.out.println("Poslije ukrstanja;");
-		for (Individual in : population.children2) {
-			System.out.println(in);
-			System.out.println();
-		}
+//		System.out.println("Poslije ukrstanja;");
+//		for (Individual in : population.children2) {
+//			System.out.println(in);
+//			System.out.println();
+//		}
 
 	}
 
-	public void crossover2(Individual p1, Individual p2) {
+	public void crossoverParents(Individual p1, Individual p2, int n) {
 		int i = 0;
 		Individual c1 = new Individual();
 		Individual c2 = new Individual();
@@ -240,10 +309,32 @@ public class GeneticAlgorithm {
 		}
 		population.children.addAll(population.children2);
 	}
+	
+	public static double solve() {
+		GeneticAlgorithm ga = new GeneticAlgorithm();
+		ga.evaluate();
+		int count = 0;
+		while (count < 10) {
+
+//			ga.population.writeIndividualsGenes();
+//			System.out.println("----------------------------------");
+
+			ga.selection();
+			count++;
+			ga.crossover();
+			ga.mutation();
+			ga.population.writeIndividualsGenes();
+		}
+
+		System.out.println("Rjesenje: " + ga.population.getFirstChild());
+		return ga.population.getFirstChild().fitness;
+	}
 
 	public static void main(String[] args) {
+//		G = new WeightedGraph("MA-20-0.2-5-5-1.wtdp");
+		
+		
 		G = new WeightedGraph();
-
 		// construct vertices
 		Vertex v0 = new Vertex("0", 2);
 		Vertex v1 = new Vertex("1", 3);
@@ -279,18 +370,9 @@ public class GeneticAlgorithm {
 		G.addVertex(v3);
 		G.addVertex(v4);
 		G.addVertex(v5);
-		GeneticAlgorithm ga = new GeneticAlgorithm();
-		ga.evaluate();
-		//while (count < 10) {
-			
-			  ga.population.writeIndividualsGenes();
-			 System.out.println("----------------------------------");
-			 
-			ga.selection();
-			count++;
-			ga.crossover();
-			ga.mutation();
-			 ga.population.writeIndividualsGenes();
-		//}
+
+		vertex_num = G.getVertices().size();
+		
+		solve();
 	}
 }

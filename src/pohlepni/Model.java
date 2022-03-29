@@ -1,5 +1,7 @@
 package pohlepni;
 
+import java.util.ArrayList;
+
 import ilog.concert.IloException;
 import ilog.concert.IloLinearNumExpr;
 import ilog.concert.IloNumVar;
@@ -95,21 +97,23 @@ public class Model {
 				cplex.addGe(y[i], z[i]);
 			}
 
-			if (cplex.solve())
+			if (cplex.solve()) {
 				objec = cplex.getObjValue();
-//			ArrayList<Integer> selectedNodes = new ArrayList<>();
-//			ArrayList<Integer> selectedEdges = new ArrayList<>();
-//			for (int i = 0; i < x.length; i++) {
-//				if (cplex.getValue(x[i]) == 1)
-//					selectedNodes.add(i);
-//			}
-//			for (int i = 0; i < y.length; i++) {
-//				if (cplex.getValue(y[i]) == 1)
-//					selectedEdges.add(i);
-//			}
-//
-//			System.out.println(selectedNodes);
-//			System.out.println(selectedEdges);
+			
+			}
+			ArrayList<Integer> selectedNodes = new ArrayList<>();
+			ArrayList<Integer> selectedEdges = new ArrayList<>();
+			for (int i = 0; i < x.length; i++) {
+				if (cplex.getValue(x[i]) == 1)
+					selectedNodes.add(i);
+			}
+			for (int i = 0; i < y.length; i++) {
+				if (cplex.getValue(y[i]) == 1)
+					selectedEdges.add(i);
+			}
+
+			System.out.println(selectedNodes);
+			System.out.println(selectedEdges);
 
 		} catch (IloException e1) {
 			e1.printStackTrace();
@@ -122,40 +126,41 @@ public class Model {
 		graph = new WeightedGraph();
 
 		// construct vertices
-		Vertex v1 = new Vertex("0", 2);
-		Vertex v2 = new Vertex("1", 3);
-		Vertex v3 = new Vertex("2", 7);
-		Vertex v4 = new Vertex("3", 6);
-		Vertex v5 = new Vertex("4", 1);
-		Vertex v6 = new Vertex("5", 4);
+		Vertex v0 = new Vertex("0", 2);
+		Vertex v1 = new Vertex("1", 3);
+		Vertex v2 = new Vertex("2", 7);
+		Vertex v3 = new Vertex("3", 6);
+		Vertex v4 = new Vertex("4", 1);
+		Vertex v5 = new Vertex("5", 4);
 
-		v1.addEdge(new Edge(v2, 1, "0")); // connect v1 v2
-		v2.addEdge(new Edge(v1, 1, "0"));
+		v0.addEdge(new Edge(v1, 1, "0")); // connect v1 v2
+		v1.addEdge(new Edge(v0, 1, "0"));
 
-		v2.addEdge(new Edge(v3, 2, "1")); // connect v2 v3
-		v3.addEdge(new Edge(v2, 2, "1"));
+		v1.addEdge(new Edge(v2, 2, "1")); // connect v2 v3
+		v2.addEdge(new Edge(v1, 2, "1"));
 
-		v2.addEdge(new Edge(v4, 3, "2")); // connect v2 v4
-		v4.addEdge(new Edge(v2, 3, "2"));
+		v1.addEdge(new Edge(v3, 3, "2")); // connect v2 v4
+		v3.addEdge(new Edge(v1, 3, "2"));
 
-		v4.addEdge(new Edge(v5, 1, "3")); // connect v4 v5
-		v5.addEdge(new Edge(v4, 1, "3"));
-		
-		v6.addEdge(new Edge(v1, 1, "4")); // connect v4 v5
-		v1.addEdge(new Edge(v6, 1, "4"));
-		
-		v6.addEdge(new Edge(v5, 4, "5")); // connect v4 v5
-		v5.addEdge(new Edge(v6, 4, "5"));
-		
-		v1.addEdge(new Edge(v5, 8, "6")); // connect v4 v5
-		v5.addEdge(new Edge(v1, 8, "6"));
+		v3.addEdge(new Edge(v4, 1, "3")); // connect v4 v5
+		v4.addEdge(new Edge(v3, 1, "3"));
 
+		v5.addEdge(new Edge(v0, 1, "4")); // connect v4 v5
+		v0.addEdge(new Edge(v5, 1, "4"));
+
+		v5.addEdge(new Edge(v4, 4, "5")); // connect v4 v5
+		v4.addEdge(new Edge(v5, 4, "5"));
+
+		v0.addEdge(new Edge(v4, 8, "6")); // connect v4 v5
+		v4.addEdge(new Edge(v0, 8, "6"));
+
+		graph.addVertex(v0);
 		graph.addVertex(v1);
 		graph.addVertex(v2);
 		graph.addVertex(v3);
 		graph.addVertex(v4);
 		graph.addVertex(v5);
-		graph.addVertex(v6);
+		System.out.println(graph);
 		graph.setNumOfEdges(7);
 		double rjesenje = solve();
 		System.out.println("Rjesenje: "+rjesenje);

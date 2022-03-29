@@ -42,7 +42,7 @@ public class GreedyAlgorithm {
 		return new Vertex(bestPick.getLabel(), bestPick.getWeight());
 	}
 
-	private static Boolean isWTD(WeightedGraph G, WeightedGraph D) { // does node without
+	public static Boolean isWTD(WeightedGraph G, WeightedGraph D) { // does node without
 		return G.allVertices().size() == nodesAndNeighbors(G, D).size(); // neighbors in D exists
 	}
 
@@ -89,27 +89,33 @@ public class GreedyAlgorithm {
 				sum2 += e.getWeight();
 		}
 		sum += sum2 / 2;
+		double min;
 		for (Vertex v : nodesThatArentInD(G, D)) {
-			double min = Double.MAX_VALUE;
+			min = Double.MAX_VALUE;
 			for (Edge e : v.getEdges()) {
 				if (D.getVertices().contains(e.getTo())) {
 					if (e.getWeight() < min)
 						min = e.getWeight();
 				}
 			}
+			for (Vertex vert : G.getVertices())
+				for (Edge e : vert.getEdges())
+					if (e.getTo().getLabel().equals(v.getLabel()) && D.getVertices().contains(e.getFrom()))
+						if (e.getWeight() < min)
+							min = e.getWeight();
 			sum += min;
 		}
 		return sum;
 	}
 
-	private static Set<Vertex> nodesThatArentInD(WeightedGraph G, WeightedGraph D) { // nodes from G that arent
+	public static Set<Vertex> nodesThatArentInD(WeightedGraph G, WeightedGraph D) { // nodes from G that arent
 		Set<Vertex> rtrn = new HashSet<>(); // of nodes in D
 		for (Vertex v : G.getVertices())
 			if (D.getVertex(v.getLabel()) == null)
 				rtrn.add(v);
 		return rtrn;
 	}
-	
+
 	public static void main(String[] args) {
 		WeightedGraph g = new WeightedGraph();
 
@@ -148,8 +154,6 @@ public class GreedyAlgorithm {
 		g.addVertex(v3);
 		g.addVertex(v4);
 		g.addVertex(v5);
-
-//		int[] niz = { 1, 0, 1, 1, 0, 0 };
 
 		WeightedGraph d = findMinTotalDomSubgraph(g);
 		System.out.println(d);

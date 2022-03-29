@@ -146,6 +146,7 @@ public class WeightedGraph {
 		private String label;
 		private Vertex to;
 		private int weight;
+		
 
 		public Edge(Vertex to, int weight, String label) {
 			super();
@@ -174,6 +175,14 @@ public class WeightedGraph {
 		String getLabel() {
 			return label;
 		}
+		
+		@Override
+		public boolean equals(Object b) {
+			if(b==null)
+				return false;
+			Edge e = (Edge) b;
+			return this.label.equals(e.getLabel());
+		}
 	}
 
 	public Set<Vertex> allVertices() {
@@ -182,6 +191,7 @@ public class WeightedGraph {
 			rtrn.add(v);
 		return rtrn;
 	}
+	
 
 	public String toString() {
 		String rez = "";
