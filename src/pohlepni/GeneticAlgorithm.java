@@ -12,10 +12,15 @@ import pohlepni.WeightedGraph.Vertex;
 
 public class GeneticAlgorithm {
 	public Random rand = new Random();
-	private Population population = new Population();
+	private Population population;
 	public static int vertex_num;
 	private static WeightedGraph G;
-	public static double min_fitness = Double.MAX_VALUE;
+
+	public GeneticAlgorithm(WeightedGraph graph) {
+		G = graph;
+		vertex_num = G.getVertices().size();
+		population = new Population();
+	}
 
 	public class Population {
 		int size = 20; // novi broj
@@ -311,16 +316,17 @@ public class GeneticAlgorithm {
 		this.evaluate();
 	}
 
-	public static double solve() {
-		GeneticAlgorithm ga = new GeneticAlgorithm();
+	public static double solve(WeightedGraph g) {
+		GeneticAlgorithm ga = new GeneticAlgorithm(g);
 		ga.evaluate();
 		int count = 0;
+		double min_fitness = Double.MAX_VALUE;
 		while (count < 10) {
-
+			
 //			ga.population.writeIndividualsGenes();
 //			System.out.println("----------------------------------");
 			ga.selection();
-			ga.population.writeIndividualsGenes();
+//			ga.population.writeIndividualsGenes();
 			ga.crossover();
 			ga.mutation();
 			if (min_fitness > ga.population.getFirstChild().fitness) {
@@ -330,47 +336,51 @@ public class GeneticAlgorithm {
 				count++;
 		}
 
-		System.out.println("Rjesenje: " + ga.population.getFirstChild());
-		return ga.population.getFirstChild().fitness;
+//		System.out.println("Rjesenje: " + ga.population.getFirstChild());
+		return min_fitness;
 	}
 
 	public static void main(String[] args) {
-		G = new WeightedGraph("MA-20-0.2-5-5-1.wtdp");
 
-		// G = new WeightedGraph();
-		// construct vertices
-		/*
-		 * Vertex v0 = new Vertex("0", 2); Vertex v1 = new Vertex("1", 3); Vertex v2 =
-		 * new Vertex("2", 7); Vertex v3 = new Vertex("3", 6); Vertex v4 = new
-		 * Vertex("4", 1); Vertex v5 = new Vertex("5", 4);
-		 * 
-		 * v0.addEdge(new Edge(v1, 1, "0")); // connect v1 v2 v1.addEdge(new Edge(v0, 1,
-		 * "0"));
-		 * 
-		 * v1.addEdge(new Edge(v2, 2, "1")); // connect v2 v3 v2.addEdge(new Edge(v1, 2,
-		 * "1"));
-		 * 
-		 * v1.addEdge(new Edge(v3, 3, "2")); // connect v2 v4 v3.addEdge(new Edge(v1, 3,
-		 * "2"));
-		 * 
-		 * v3.addEdge(new Edge(v4, 1, "3")); // connect v4 v5 v4.addEdge(new Edge(v3, 1,
-		 * "3"));
-		 * 
-		 * v5.addEdge(new Edge(v0, 1, "4")); // connect v4 v5 v0.addEdge(new Edge(v5, 1,
-		 * "4"));
-		 * 
-		 * v5.addEdge(new Edge(v4, 4, "5")); // connect v4 v5 v4.addEdge(new Edge(v5, 4,
-		 * "5"));
-		 * 
-		 * v0.addEdge(new Edge(v4, 8, "6")); // connect v4 v5 v4.addEdge(new Edge(v0, 8,
-		 * "6"));
-		 * 
-		 * G.addVertex(v0); G.addVertex(v1); G.addVertex(v2); G.addVertex(v3);
-		 * G.addVertex(v4); G.addVertex(v5);
-		 */
-
-		vertex_num = G.getVertices().size();
-
-		solve();
+//		WeightedGraph G = new WeightedGraph();
+//
+//		// construct vertices
+//		Vertex v0 = new Vertex("0", 2);
+//		Vertex v1 = new Vertex("1", 3);
+//		Vertex v2 = new Vertex("2", 7);
+//		Vertex v3 = new Vertex("3", 6);
+//		Vertex v4 = new Vertex("4", 1);
+//		Vertex v5 = new Vertex("5", 4);
+//
+//		v0.addEdge(new Edge(v1, 1, "0")); // connect v1 v2
+//		v1.addEdge(new Edge(v0, 1, "0"));
+//
+//		v1.addEdge(new Edge(v2, 2, "1")); // connect v2 v3
+//		v2.addEdge(new Edge(v1, 2, "1"));
+//
+//		v1.addEdge(new Edge(v3, 3, "2")); // connect v2 v4
+//		v3.addEdge(new Edge(v1, 3, "2"));
+//
+//		v3.addEdge(new Edge(v4, 1, "3")); // connect v4 v5
+//		v4.addEdge(new Edge(v3, 1, "3"));
+//
+//		v5.addEdge(new Edge(v0, 1, "4")); // connect v4 v5
+//		v0.addEdge(new Edge(v5, 1, "4"));
+//
+//		v5.addEdge(new Edge(v4, 4, "5")); // connect v4 v5
+//		v4.addEdge(new Edge(v5, 4, "5"));
+//
+//		v0.addEdge(new Edge(v4, 8, "6")); // connect v4 v5
+//		v4.addEdge(new Edge(v0, 8, "6"));
+//
+//		G.addVertex(v0);
+//		G.addVertex(v1);
+//		G.addVertex(v2);
+//		G.addVertex(v3);
+//		G.addVertex(v4);
+//		G.addVertex(v5);
+//
+		WeightedGraph G = new WeightedGraph("MA-20-0.2-5-5-1.wtdp");
+		System.out.println("rjesenje "+solve(G));
 	}
 }

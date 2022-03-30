@@ -1,7 +1,5 @@
 package pohlepni;
 
-import java.util.ArrayList;
-
 import ilog.concert.IloException;
 import ilog.concert.IloLinearNumExpr;
 import ilog.concert.IloNumVar;
@@ -44,6 +42,9 @@ public class Model {
 		try {
 			@SuppressWarnings("resource")
 			IloCplex cplex = new IloCplex();
+			
+			cplex.setParam(IloCplex.Param.TimeLimit, 600);
+			cplex.setOut(null);
 
 			IloNumVar[] x = new IloNumVar[v];
 			for (int i = 0; i < v; i++)
@@ -101,19 +102,19 @@ public class Model {
 				objec = cplex.getObjValue();
 			
 			}
-			ArrayList<Integer> selectedNodes = new ArrayList<>();
-			ArrayList<Integer> selectedEdges = new ArrayList<>();
-			for (int i = 0; i < x.length; i++) {
-				if (cplex.getValue(x[i]) == 1)
-					selectedNodes.add(i);
-			}
-			for (int i = 0; i < y.length; i++) {
-				if (cplex.getValue(y[i]) == 1)
-					selectedEdges.add(i);
-			}
-
-			System.out.println(selectedNodes);
-			System.out.println(selectedEdges);
+//			ArrayList<Integer> selectedNodes = new ArrayList<>();
+//			ArrayList<Integer> selectedEdges = new ArrayList<>();
+//			for (int i = 0; i < x.length; i++) {
+//				if (cplex.getValue(x[i]) == 1)
+//					selectedNodes.add(i);
+//			}
+//			for (int i = 0; i < y.length; i++) {
+//				if (cplex.getValue(y[i]) == 1)
+//					selectedEdges.add(i);
+//			}
+//
+//			System.out.println(selectedNodes);
+//			System.out.println(selectedEdges);
 
 		} catch (IloException e1) {
 			e1.printStackTrace();
